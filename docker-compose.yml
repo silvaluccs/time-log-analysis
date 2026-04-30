@@ -1,0 +1,5 @@
+services:
+  timesheet-analyzer:
+    build: .
+    volumes:
+      - .:/app
