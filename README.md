@@ -2,6 +2,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.13-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![CI](https://img.shields.io/github/actions/workflow/status/SEU_USUARIO/SEU_REPOSITORIO/ci.yml?style=for-the-badge&logo=githubactions&logoColor=white&label=CI)
 
 Aplicação containerizada para análise de registros de timesheet. Lê um arquivo JSON com entradas de tempo, processa as informações e gera um relatório analítico completo em JSON.
 
@@ -27,12 +28,15 @@ A aplicação recebe um conjunto de registros de tempo trabalhado por funcionár
 
 ```
 .
+├── .github/
+│   └── workflows/
+│       └── ci.yml           # Pipeline de integração contínua
 ├── src/
-│   ├── filter.py        # Carregamento e filtragem dos dados
-│   ├── aggregator.py    # Agrupamentos, rankings e cálculos
-│   └── app.py           # Pipeline principal e escrita do resultado
-├── main.py              # Entrypoint da aplicação
-├── data.json            # Arquivo de entrada com os registros
+│   ├── filter.py            # Carregamento e filtragem dos dados
+│   ├── aggregator.py        # Agrupamentos, rankings e cálculos
+│   └── app.py               # Pipeline principal e escrita do resultado
+├── main.py                  # Entrypoint da aplicação
+├── data.json                # Arquivo de entrada com os registros
 ├── Dockerfile
 ├── docker-compose.yml
 └── README.md
@@ -78,12 +82,24 @@ O arquivo `result.json` será gerado automaticamente na raiz do projeto após a 
 
 ---
 
+## ✅ Integração Contínua
+
+O projeto utiliza **GitHub Actions** para validação automática a cada push ou pull request na branch `main`.
+
+O pipeline executa:
+1. Build da imagem Docker
+2. Execução do container via `docker compose`
+3. Validação de que o `result.json` foi gerado com sucesso
+
+---
+
 ## 📁 Arquivos
 
 | Arquivo | Descrição |
 |---|---|
 | `data.json` | Arquivo de entrada com os registros de timesheet |
 | `result.json` | Arquivo de saída gerado pela aplicação |
+| `.github/workflows/ci.yml` | Pipeline de integração contínua |
 
 ---
 
@@ -102,3 +118,11 @@ O arquivo `result.json` será gerado automaticamente na raiz do projeto após a 
 ```
 
 ---
+
+## 🧠 Regras de negócio
+
+- Registros com `minutes <= 0` são ignorados e contabilizados
+- Tarefas ordenadas por `totalMinutes` decrescente, `taskId` crescente em empate
+- Funcionários ordenados por `totalMinutes` decrescente, `userId` crescente em empate
+- Funcionário com mais tarefas distintas ordenado por `distinctTasks` decrescente, `userId` crescente em empate
+- Percentuais exibidos com duas casas decimais (ex: `14.25%`)
