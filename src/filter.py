@@ -1,4 +1,7 @@
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def load_json(file_name: str) -> list:
@@ -16,13 +19,16 @@ def load_json(file_name: str) -> list:
         json.JSONDecodeError: Caso o arquivo não seja um JSON válido.
     """
     try:
+        logger.info("Carregando arquivo '%s'", file_name)
         with open(file=file_name, mode="r", encoding="utf-8") as file:
-            return list(json.load(fp=file))
+            data = list(json.load(fp=file))
+        logger.info("%d registros carregados de '%s'", len(data), file_name)
+        return data
     except FileNotFoundError:
-        print(f"Arquivo '{file_name}' não encontrado.")
+        logger.error("Arquivo '%s' não encontrado.", file_name)
         raise
     except json.JSONDecodeError:
-        print(f"Arquivo '{file_name}' não é um JSON válido.")
+        logger.error("Arquivo '%s' não é um JSON válido.", file_name)
         raise
 
 
@@ -36,17 +42,16 @@ def clear_invalid_records(data: list) -> tuple[int, list]:
     Returns:
         tuple[int, list]: Número de registros inválidos removidos e a lista de dados filtrada.
     """
+    logger.info("Filtrando registros inválidos de %d entradas", len(data))
     valid = [record for record in data if record["minutes"] > 0]
     ignored = len(data) - len(valid)
+    logger.info("%d registros válidos | %d registros ignorados", len(valid), ignored)
     return ignored, valid
 
 
 if __name__ == "__main__":
     json_data = load_json(file_name="data.json")
-
     invalid_records, filtered_data = clear_invalid_records(data=json_data)
-
     assert len(filtered_data) == len(json_data) - invalid_records
     assert invalid_records == 41
-
     print("Testes passaram.")
