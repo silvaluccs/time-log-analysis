@@ -1,6 +1,9 @@
+import logging
 from collections import defaultdict
 
 from . import filter
+
+logger = logging.getLogger(__name__)
 
 
 def group_by_task(data: list) -> dict:
@@ -13,9 +16,11 @@ def group_by_task(data: list) -> dict:
     Returns:
         dict: Dicionário com taskId como chave e lista de registros como valor.
     """
+    logger.info("Agrupando %d registros por taskId", len(data))
     tasks = defaultdict(list)
     for record in data:
         tasks[record["taskId"]].append(record)
+    logger.info("%d tarefas distintas encontradas", len(tasks))
     return dict(tasks)
 
 
@@ -29,7 +34,8 @@ def calculate_total_minutes(data: list) -> int:
     Returns:
         int: Soma total dos minutos.
     """
-    return sum(record["minutes"] for record in data)
+    total = sum(record["minutes"] for record in data)
+    return total
 
 
 def calculate_task_percentage(task_minutes: int, total_minutes: int) -> str:
@@ -59,6 +65,7 @@ def build_task(task_id: int, records: list, total_minutes: int) -> dict:
         dict: Dicionário com taskId, taskName, totalMinutes e percentage.
     """
     task_minutes = calculate_total_minutes(records)
+    logger.debug("Construindo tarefa %d com %d minutos", task_id, task_minutes)
     return {
         "taskId": task_id,
         "taskName": records[0]["taskName"],
@@ -77,6 +84,7 @@ def sort_tasks(tasks: list) -> list:
     Returns:
         list: Lista ordenada de tarefas.
     """
+    logger.info("Ordenando %d tarefas", len(tasks))
     return sorted(tasks, key=lambda t: (-t["totalMinutes"], t["taskId"]))
 
 
@@ -90,9 +98,11 @@ def build_top_3_tasks(tasks: list) -> list:
     Returns:
         list: Top 3 tarefas contendo apenas taskId, taskName e percentage.
     """
-    return [
+    top3 = [
         {k: v for k, v in task.items() if k != "totalMinutes"} for task in tasks[:3]
     ]
+    logger.info("Top 3 tarefas: %s", [t["taskId"] for t in top3])
+    return top3
 
 
 def group_by_employee(tasks: dict) -> dict:
@@ -106,6 +116,7 @@ def group_by_employee(tasks: dict) -> dict:
         dict: Dicionário com userId como chave e dados do funcionário como valor,
               incluindo totalMinutes e lista de taskIds distintos.
     """
+    logger.info("Agrupando registros por funcionário")
     employees = {}
     for task_id, records in tasks.items():
         for record in records:
@@ -121,6 +132,7 @@ def group_by_employee(tasks: dict) -> dict:
                 employees[user_id]["totalMinutes"] += record["minutes"]
                 if task_id not in employees[user_id]["taskIds"]:
                     employees[user_id]["taskIds"].append(task_id)
+    logger.info("%d funcionários distintos encontrados", len(employees))
     return employees
 
 
@@ -134,6 +146,7 @@ def sort_employees(employees: dict) -> list:
     Returns:
         list: Lista ordenada de funcionários.
     """
+    logger.info("Ordenando %d funcionários por totalMinutes", len(employees))
     return sorted(employees.values(), key=lambda e: (-e["totalMinutes"], e["userId"]))
 
 
@@ -147,10 +160,12 @@ def build_top_3_employees(employees: list) -> list:
     Returns:
         list: Top 3 funcionários contendo userId, userName e totalMinutes.
     """
-    return [
+    top3 = [
         {k: v for k, v in employee.items() if k != "taskIds"}
         for employee in employees[:3]
     ]
+    logger.info("Top 3 funcionários: %s", [e["userId"] for e in top3])
+    return top3
 
 
 def get_top_3_employees(tasks: dict) -> list:
@@ -163,6 +178,7 @@ def get_top_3_employees(tasks: dict) -> list:
     Returns:
         list: Top 3 funcionários ordenados por totalMinutes.
     """
+    logger.info("Calculando top 3 funcionários")
     employees = group_by_employee(tasks)
     employees = sort_employees(employees)[:3]
     return build_top_3_employees(employees)
@@ -179,6 +195,7 @@ def sort_most_distinct_user(employees: dict) -> list:
     Returns:
         list: Lista ordenada de funcionários por tarefas distintas.
     """
+    logger.info("Ordenando funcionários por tarefas distintas")
     return sorted(employees.values(), key=lambda e: (-len(e["taskIds"]), e["userId"]))
 
 
@@ -192,10 +209,15 @@ def get_most_distinct_user_on_task(tasks: dict) -> dict:
     Returns:
         dict: Dicionário com userId, userName, distinctTasks e lista de taskIds.
     """
+    logger.info("Identificando funcionário com mais tarefas distintas")
     employees = group_by_employee(tasks)
     sorted_employees = sort_most_distinct_user(employees)
     top = sorted_employees[0]
-
+    logger.info(
+        "Funcionário %d possui %d tarefas distintas",
+        top["userId"],
+        len(top["taskIds"]),
+    )
     return {
         "userId": top["userId"],
         "userName": top["userName"],
