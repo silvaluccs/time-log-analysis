@@ -2,7 +2,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.13-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-![CI](https://img.shields.io/github/actions/workflow/status/SEU_USUARIO/SEU_REPOSITORIO/ci.yml?style=for-the-badge&logo=githubactions&logoColor=white&label=CI)
+![CI](https://img.shields.io/github/actions/workflow/status/silvaluccs/time-log-analysis/ci.yml?style=for-the-badge&logo=githubactions&logoColor=white&label=CI)
 
 Aplicação containerizada para análise de registros de timesheet. Lê um arquivo JSON com entradas de tempo, processa as informações e gera um relatório analítico completo em JSON.
 
