@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-import filter
+from . import filter
 
 
 def group_by_task(data: list) -> dict:
